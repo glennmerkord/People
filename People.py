@@ -1,12 +1,22 @@
+"""
+-------------------------------------------------------
+People.py
+
+	2026 09 24		version 1.0.0
+	2026 09 26		rewrote show_person and show_family
+-------------------------------------------------------
+"""
+
 from GEDCOM.GEDCOM_File			import GEDCOM_File
+from GEDCOM.GEDCOM_Date			import Date
 from GEDCOM.GEDCOM_Individual	import GEDCOM_Individual, no_gedcom_individual
 from GEDCOM.GEDCOM_Family		import GEDCOM_Family, no_gedcom_family
 
-from Date						import Date
+from CommandLine.CommandLine	import Framework
 
-from Command_Line_Framework		import Framework
+from Utilities.Utilities		import is_integer, match_first_in_list, caller_info
 
-from Utilities					import is_integer, match_first_in_list, caller_info
+import	os
 
 #
 # class Name
@@ -40,7 +50,78 @@ class Person():
 			self.child_of		: Family		= no_family		# family this person is a child of
 		self.families			: [Family]		= []			# list of families this person is a spouse of
 		self.number_of_children	: int			= 0				# total number of children from all families
+
+	def __format__( self, format_string):
+
+		def format_name( name: str, width: int):
+			if len( name) > width:
+				return name[:width-3] + "..."
+			elif len( name) < max_length:
+				return name.ljust( width)
+			else:
+				return name
+			# end if
+		#end def
+
+		if format_string == "full":
+			format_string = f"id:name:birth-death:parents:#_of_spouses:#_of_children"
+		# end if
+
+		items = format_string.strip().lower().split(":")
+		return_string = []
+		max_length = 30
+
+		for item in items:
+			if item == "id":
+				return_string.append( self.id)
+			elif item == "name":
+				name = format_name( self.fullname, max_length)
+				return_string.append( name)
+			elif item == "birth-death":
+				birth_death_string = self.birth_death( format = "long")
+				return_string.append( f"{birth_death_string:13}")
+			elif item == "parents":
+				father = format_name( self.father.fullname, max_length)
+				mother = format_name( self.mother.fullname, max_length)
+				if self.sex == "Male":
+					parents_string = f"son of {father} & {mother}"
+				elif self.sex == "Female":
+					parents_string = f"dau of {father} & {mother}"
+				else:
+					parents_string = f"chi of {father} & {mother}"					
+				# end if
+				return_string.append( f"{parents_string}")
+			elif item == "#_of_spouses":
+				number_of_spouses = len( self.families)
+				if number_of_spouses == 1:
+					return_string.append( f"{number_of_spouses} spouse ")
+				else:
+					return_string.append( f"{number_of_spouses} spouses")
+				# end if
+			elif item == "#_of_children":
+				if self.number_of_children == 1:
+					return_string.append( f"{self.number_of_children} child")
+				else:
+					return_string.append( f"{self.number_of_children} children")
+					# end if					
+			# end if
+		# end for
+		return "  ".join( return_string)
 	
+	def birth_death( self, format = "short"):
+		birth_year = self.birth_date.begin_year
+		death_year = self.death_date.end_year
+
+		if format == "short":
+			if birth_year == "0000": birth_year = ""
+			if death_year == "9999": death_year = ""
+		else:
+			if birth_year == "0000": birth_year = "    "
+			if death_year == "9999": death_year = "    "
+		# end if
+
+		return f"({birth_year} - {death_year})"
+	# end def	
 	def __eq__( self: Person, other: Person):
 		return self.id == other.id
 	
@@ -64,7 +145,59 @@ class Family():
 		self.marriage_date		: Date				= Date( "")
 		self.marriage_place		: str				= ""
 		self.children			: list[Person]		= []		# sorted by birth date	
+
+	def __format__( self, format_string):
+
+		def format_name( name: str, width: int):
+			if len( name) > width:
+				return name[:width-3] + "..."
+			elif len( name) < max_length:
+				return name.ljust( width)
+			else:
+				return name
+			# end if
+		#end def
+
+		items = format_string.strip().lower().split(":")
+		return_string = []
+		max_length = 30
+
+		for item in items:
+			if item == "id":
+				return_string.append( self.id)
+			elif item == "spouses":
+				husband		= format_name( self.husband.fullname, max_length)
+				wife		= format_name( self.wife.fullname, max_length)
+				return_string.append( f"{husband} & {wife}")
+			elif item == "#_of_children":
+				number_of_children = len( self.children)
+				if number_of_children == 1:
+					return_string.append( f"& 1 child")
+				else:
+					return_string.append( f"& {number_of_children} children")
+			elif item == "children":
+				for child in self.children:
+					name = format_name( child.fullname, max_length)
+					return_string.append( f"\n\t{name}")
+		# end for
+		return "  ".join( return_string)
+	# end def
 	
+	def birth_death( self, format = "short"):
+		birth_year = self.birth_date.begin_year
+		death_year = self.death_date.end_year
+
+		if format == "short":
+			if birth_year == "0000": birth_year = ""
+			if death_year == "9999": death_year = ""
+		else:
+			if birth_year == "0000": birth_year = "    "
+			if death_year == "9999": death_year = "    "
+		# end if
+
+		return f"({birth_year} - {death_year})"
+	# end def
+		
 	def __eq__( self: Family, other: Family):
 		return self.id == other.id
 	
@@ -84,8 +217,8 @@ class People():
 		self.gedcom_file			= gedcom_file
 		self.persons				= {}		# keyed by person id
 		self.families				= {}		# keyed by family id
-		self.person_xref_letter		= "P"
-		self.family_xref_letter		= "F"
+		self.person_xref_letter		= ""
+		self.family_xref_letter		= ""
 
 		self._get_people_and_families_from_gedcom_file( gedcom_file)
 
@@ -95,31 +228,16 @@ class People():
 
 		if len( self.families) > 0:
 			first_id = next(iter(self.families))
-			self.family_xref_letter = first_id[1]			
-#
-# find person by 1) full xref, 2) integer identifier, 3) name and birthdate
-# search by name and birthdate may return multiple matches
-#
+			self.family_xref_letter = first_id[1]
+
 	def find_person( self, search_term: str) -> [Person]:
 		candidates: list[Person] = []
-		
+
 		if not search_term:
 			return candidates
 
-		if "@" in search_term:
-			id = search_term
-		elif is_integer( search_term):
-			id = f"@{self.person_xref_letter}{search_term}@"
-		else:
-			id = ""
-	
-		if id:
-			if id in self.persons.keys():
-				candidates.append( self.persons[id])
-			return candidates
-
 		search_terms = search_term.lower().split()
-		
+
 		for person in self.persons.values():	
 			name_and_date = str(person.fullname + " " + person.birth_date.begin_date).lower()
 			match = True
@@ -132,6 +250,40 @@ class People():
 				candidates.append( person)
 		
 		return candidates
+
+	def find_family( self, search_term: str) -> [Family]:
+	
+		candidate_families: list[Family] = []
+
+		if not search_term:
+			return candidate_families
+		# end if
+
+		search_terms 								= search_term.split()
+		candidate_people: list[GEDCOM_Individual]	= []
+
+		for person in self.persons.values():
+			# date 			= persons.birth_date.begin_date if type( person.birth_date) == Date else person.birth_date
+			date			= person.birth_date.begin_date
+			name_and_date	= str(person.name + " " + date).lower()
+			match			= True
+
+			for term in search_terms:
+				if term not in name_and_date:
+					match = False
+					break
+			
+			if match:
+				candidate_people.append( person)	
+		# end for
+	
+		for person in candidate_people:
+			for family in person.families_a_spouse_in:
+				candidate_families.append( family)
+
+		return candidate_families
+		
+	# end def find_family
 #
 # create persons and families from gedcom individuals and families
 # and generated linkages between persons and families
@@ -182,6 +334,7 @@ class People():
 		for family in self.families.values():
 			family.children.sort(key = lambda child: child.birth_date.end_date_integer)
 		#end for
+
 #
 # create person from gedcom individual
 #
@@ -228,7 +381,8 @@ def main():
 	
 	import sys
 
-	people: People.People	= None
+	gedcom_file: GEDCOM_File	= None
+	people: People.People		= None
 
 	def error_handler( status, command, sub_command, arguments):
 		print( f"\n{status}:  {command} {sub_command} {arguments}")
@@ -236,72 +390,97 @@ def main():
 #
 # open
 #
-	def open( filename: str):
-		print( f"open {filename}")
+	def open( arguments: str):
+		if not arguments:
+			print()
+			print( "Open: You must provide a file name!")
+			return
+	
+		script_dir	= os.path.dirname(os.path.abspath(__file__))
+		file_name	= arguments
+		file_path	= os.path.join(script_dir, file_name)
+	
+		nonlocal gedcom_file
+	
 		gedcom_file = GEDCOM_File()
-		( nl, ni, nf, ng) = gedcom_file.open_file( filename)
-		if nl == 0:
-			print(f"\nOops, something went wrong opening file {filename}")
+	
+		(nl, ni, nf, ng) = gedcom_file.open_file( file_path)
+		if  nl == 0:
+			print( "\nop: There was a problem opening file", repr( file_name))
+			return
 		else:
-			nonlocal people
-			people = People( gedcom_file)
-	#
-	# show all
-	#
-	def show_all( argument: str):
-		if not people:
-			print( f"\nError: You must open a GEDCOM file first!")
+			print()
+			print( f"GEDCOM import successful: {nl} lines {ni} individuals and {nf} families in {ng} group(s) of related individuals")
+
+		nonlocal people
+		people = People( gedcom_file)
+	
+	def show_person( arguments: str):
+		nonlocal gedcom_file
+		if not gedcom_file:
+			print( f"\nYou must open a gedcom file first!")
 			return
-		words = argument.strip().split( maxsplit = 1)
-		if len( words) == 0:
-			print( f"\nError: Argument missing for Show All!")
-			return
-		match = match_first_in_list( words[0], ["Persons", "Families"])
-		if match == None:
-			print( f"\nError: Invalid argument '{words[0]}' for Show All!")
-			return
-		if len( words) > 1:
-			print( f"\nWarning: Extraneous argument '{words[1]}' for Show All ignored!")
-		if match == "Persons":
+		
+		nonlocal people
+
+		print( f"{len( people.persons)} people!")
+
+		if len( arguments) == 0:
 			print()
 			for person in people.persons.values():
-				print( f"{person.fullname}")
-		elif match == "Families":
-			print()
-			for family in people.families.values():
-				print( f"{family.husband.fullname } {family.wife.fullname}")
+				print( f"{person:full}")
+			return
 
-	def show_person( arguments: str):
-		nonlocal people
-		persons = people.find_person( arguments)
-		if len( persons) == 0:
-			print( f"\nNo person matching '{arguments}' found")
-		for person in persons:
-			print( f"{person.fullname}")
+		person_list = people.find_person( arguments)
+		if len( person_list) == 0:
+			print( f"\nli: No person found! {arguments}")
+		elif len( person_list) == 1:
+			person = person_list[0]
+			print( f"\n{person:full}")
+		else:
+			print()
+			for person in person_list:
+				print( f"{person:full}")
 
 	def show_family( arguments: str):
-		print( f"\nShow Family {arguments}")
+		nonlocal gedcom_file
+		if not gedcom_file:
+			print( f"\nYou must open a gedcom file first!")
+			return
 
-	def show_group( arguments: str):
-		print( f"\nShow Group {arguments}")
+		nonlocal people
+
+		
+		print( f"{len( people.families)} families!")
+
+		if len( arguments) == 0:
+			print()
+			for family in people.families.values():
+				print( f"{family:id:spouses:#_of_children}")
+			return
+
+		family_list = people.find_family( arguments)
+		if len( family_list) == 0:
+			print( f"\nNo family found! {arguments}")
+		elif len( family_list) == 1:
+			family = family_list[0]
+			print( f"{family:id:spouses:#_of_children:children}")
+		else:
+			print()
+			for family in family_list:
+				print( f"{family:id:spouses:#_of_children}")
 
 	def show_commands( arguments: str):
 		print( f"\nShow Commands {arguments}")
-
-	def export( arguments: str):
-		print( f"\nExport {arguments}")
 
 	def exit( arguments: str):
 		print( f"\nExit {arguments}")
 
 	registry =	{
 		"Open"				: open,
-		"Show All"			: show_all,
 		"Show Person"		: show_person,
 		"Show Family"		: show_family,
-		"Show Group"		: show_group,
 		"Show Commands"		: show_commands,
-		"Export"			: export,
 		"Exit"				: exit
 	}
 	
