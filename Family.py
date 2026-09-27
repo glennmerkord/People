@@ -15,7 +15,7 @@ class Family():
 	def __init__( self: Family, initialize_relationships = True):
 		self.id					: str				= ""		# family identifier
 		if initialize_relationships:
-			from Person import no_person
+			from People.Person import no_person
 			self.husband		: Person			= no_person
 			self.wife			: Person			= no_person
 		self.marriage_date		: Date				= Date( "")

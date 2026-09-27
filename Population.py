@@ -14,8 +14,8 @@ from GEDCOM.GEDCOM_Date				import Date
 from GEDCOM.GEDCOM_Individual		import no_gedcom_individual
 from GEDCOM.GEDCOM_Family			import no_gedcom_family
 
-from Person		import Person
-from Family		import Family
+from People.Person					import Person
+from People.Family					import Family
 
 #	
 # class Population
@@ -99,7 +99,7 @@ class Population():
 #
 	def _get_people_and_families_from_gedcom_file( self, file: GEDCOM_File) -> bool:
 #
-# create persons and famlies from gedcom individuals and families
+# create persons and families from gedcom individuals and families
 #
 		for gedcom_individual in file.individuals.values():
 			self.persons[gedcom_individual.id]	= self._new_person_from_gedcom_individual( gedcom_individual)

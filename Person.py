@@ -22,8 +22,8 @@ class Person():
 		self.death_date			: Date			= Date( "")
 		self.death_place		: str			= ""
 		if initialize_relationships:
-			from Person import no_person
-			from Family import no_family
+			from People.Person import no_person
+			from People.Family import no_family
 			self.father			: Person		= no_person
 			self.mother			: Person		= no_person
 			self.child_of		: Family		= no_family		# family this person is a child of
