@@ -5,6 +5,7 @@ Descendants.py
 	2026 09 28		created
 ---------------------------------------------------------
 """
+
 from People.Person		import Person
 from People.Family		import Family
 

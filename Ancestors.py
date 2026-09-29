@@ -6,6 +6,8 @@ Ancestors.py
 ---------------------------------------------------------
 """
 
+from People.Person		import no_person
+
 def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[float, int, int, Person]]:
 	
 	""" Returns a list of a person's ancestors, each list item being a tuple containing			"""
@@ -35,7 +37,7 @@ def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[flo
 
 	traverse( person, current_ahnentafel=1, current_gen=0)
 	
-	ancestor_list = [ (_position(ahnentafel), ahnentafel, current_gen, person) for ahnentafel, person in ancestors.items() ]
+	ancestor_list = [ (_position(ahnentafel), ahnentafel, _generation(ahnentafel), person) for ahnentafel, person in ancestors.items() ]
 	
 	ancestor_list.sort( key=lambda x: x[0], reverse=True)
 	
@@ -51,3 +53,7 @@ def _position( ahnentafel: int) -> float:
 	position	= ahnentafel - first
 
 	return 1. - (2 * position + 1) / (2 * first)
+
+def _generation( ahnentafel: int) -> int:
+	generation	= ahnentafel.bit_length() - 1
+	return generation	

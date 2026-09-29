@@ -154,9 +154,10 @@ def main():
 		elif len( person_list) == 1:
 			person = person_list[0]
 			descendants =  get_descendants( person, number_of_generations)
+			print()
 			for (generation, descendant) in descendants:
 				tabs = "\t"*generation
-				print( f"\n{tabs} {generation} {descendant.fullname}")
+				print( f"{tabs} {generation} {descendant.fullname}")
 		else:
 			print()
 			for person in person_list:
