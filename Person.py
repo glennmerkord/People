@@ -1,12 +1,14 @@
 """
--------------------------------------------------------
+---------------------------------------------------------
 Person.py
 
 	2026 09 24		version 1.0.0
 	2026 09 26		rewrote show_person and show_family
 	2026 09 26		split off from People.py
--------------------------------------------------------
+	2026 09 26		corrected import of Person and Family
+---------------------------------------------------------
 """
+
 from GEDCOM.GEDCOM_Date		import Date
 
 class Person():

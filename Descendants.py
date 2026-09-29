@@ -1,5 +1,10 @@
+"""
+---------------------------------------------------------
+Descendants.py
 
-from __future__			import annotations
+	2026 09 28		created
+---------------------------------------------------------
+"""
 from People.Person		import Person
 from People.Family		import Family
 

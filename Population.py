@@ -1,12 +1,14 @@
 """
--------------------------------------------------------
+---------------------------------------------------------
 Population.py
 
 	2026 09 24		version 1.0.0
 	2026 09 26		rewrote show_person and show_family
 	2026 09 26		renamed from People.py
 	2026 09 26		split off Main, Person, and Family
--------------------------------------------------------
+	2026 09 28		corrected import of Person and Family
+	2026 09 28		fixed person.name to person.fullname
+---------------------------------------------------------
 """
 
 from GEDCOM.GEDCOM_File				import GEDCOM_File
@@ -74,7 +76,7 @@ class Population():
 		for person in self.persons.values():
 			# date 			= persons.birth_date.begin_date if type( person.birth_date) == Date else person.birth_date
 			date			= person.birth_date.begin_date
-			name_and_date	= str(person.name + " " + date).lower()
+			name_and_date	= str(person.fullname + " " + date).lower()
 			match			= True
 
 			for term in search_terms:

@@ -1,11 +1,14 @@
 """
--------------------------------------------------------
+--------------------------------------------------------------
 Main.py
 
 	2026 09 24		version 1.0.0
 	2026 09 26		rewrote show_person and show_family
 	2026 09 26		split off from People.py
--------------------------------------------------------
+	2026 09 26		corrected import of Population
+	2026 09 28		added Show Ancestors and Show Descendants
+	2026 09 28		rewrote handling of command line arguments
+--------------------------------------------------------------
 """
 from __future__					import annotations
 
@@ -67,18 +70,22 @@ def main():
 		if not gedcom_file:
 			print( f"\nYou must open a gedcom file first!")
 			return
+
+		arguments = shlex.split( argument_string)
+		if len( arguments) < 1:
+			print( f"\nYou must enter a name (in quotes)!")
+			return
+
+		if len( arguments) > 1:
+			print(f"\nExtraneous argument(s) after name ignored")
+
+		name = arguments[0]
 		
 		nonlocal people
 
-		if len( argument_string) == 0:
-			print()
-			for person in people.persons.values():
-				print( f"{person:full}")
-			return
-
-		person_list = people.find_person( argument_string)
+		person_list = people.find_person( name)
 		if len( person_list) == 0:
-			print( f"\nli: No person found! {argument_string}")
+			print( f"\nNo person found! {name}")
 		elif len( person_list) == 1:
 			person = person_list[0]
 			print( f"\n{person:full}")
@@ -95,19 +102,16 @@ def main():
 		
 		nonlocal people
 
-		if len( argument_string) == 0:
-			items = []
-		else:
-			items = argument_string.split( ",", 1)
-		if len( items) == 2:
-			if is_integer( items[1]):
-				name					= items[0]
-				number_of_generations	= int(items[1])
-			else:
-				items = []
-		if len (items) != 2:
-			print( f"\nYou must enter a name and number of generations (separated by a comma)!")
+		arguments = shlex.split( argument_string)
+		if len( arguments) < 2 or not is_integer( arguments[1]):
+			print( f"\nYou must enter a name (in quotes) and number of generations!")
 			return
+
+		if len( arguments) > 2:
+			print(f"\nExtraneous argument(s) after number of generations ignored")
+
+		name = arguments[0]
+		number_of_generations = int(arguments[1])
 
 		person_list = people.find_person( name)
 		if len( person_list) == 0:
@@ -116,8 +120,9 @@ def main():
 			person			= person_list[0]
 			ancestor_list	= get_ancestors( person, number_of_generations)
 			print()
-			for (position, ahnentafel_number, ancestor) in ancestor_list:
-				print(f"Ancestor {ahnentafel_number} is {ancestor.fullname} at position {position}")
+			for (position, ahnentafel_number, generation, ancestor) in ancestor_list:
+				tabs = "\t"*generation
+				print(f"{tabs}{ahnentafel_number} {ancestor.fullname}")
 		else:
 			print()
 			for person in person_list:
@@ -132,19 +137,16 @@ def main():
 		
 		nonlocal people
 
-		if len( argument_string) == 0:
-			items = []
-		else:
-			items = argument_string.split( ",", 1)
-		if len( items) == 2:
-			if is_integer( items[1]):
-				name					= items[0]
-				number_of_generations	= int(items[1])
-			else:
-				items = []
-		if len (items) != 2:
-			print( f"\nYou must enter a name and number of generations (separated by a comma)!")
+		arguments = shlex.split( argument_string)
+		if len( arguments) < 2 or not is_integer( arguments[1]):
+			print( f"\nYou must enter a name (in quotes) and number of generations!")
 			return
+
+		if len( arguments) > 2:
+			print(f"\nExtraneous argument(s) after number of generations ignored")
+
+		name = arguments[0]
+		number_of_generations = int(arguments[1])
 
 		person_list = people.find_person( name)
 		if len( person_list) == 0:
@@ -167,19 +169,21 @@ def main():
 			print( f"\nYou must open a gedcom file first!")
 			return
 
-		nonlocal people
-
-		print( f"{len( people.families)} families!")
-
-		if len( argument_string) == 0:
-			print()
-			for family in people.families.values():
-				print( f"{family:id:spouses:#_of_children}")
+		arguments = shlex.split( argument_string)
+		if len( arguments) < 1:
+			print( f"\nYou must enter a name (in quotes)!")
 			return
 
-		family_list = people.find_family( argument_string)
+		if len( arguments) > 1:
+			print(f"\nExtraneous argument(s) after name ignored")
+
+		name = arguments[0]
+
+		nonlocal people
+
+		family_list = people.find_family( name)
 		if len( family_list) == 0:
-			print( f"\nNo family found! {argument_string}")
+			print( f"\nNo family found! {name}")
 		elif len( family_list) == 1:
 			family = family_list[0]
 			print( f"{family:id:spouses:#_of_children:children}")

@@ -1,10 +1,16 @@
-from People.Person	import no_person
+"""
+---------------------------------------------------------
+Ancestors.py
 
-def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[float, int, Person]]:
+	2026 09 26		created
+---------------------------------------------------------
+"""
+
+def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[float, int, int, Person]]:
 	
-	""" Returns a list of a person's ancestors, each list item being a tuple containing """
-	""" vertical position in an ahnentafel chart, ahnentafel_number, and person         """
-	""" for a given number of generations                                               """
+	""" Returns a list of a person's ancestors, each list item being a tuple containing			"""
+	""" vertical position in an ahnentafel chart, ahnentafel_number, generation, and person		"""
+	""" for a given number of generations														"""
 	
 	ancestors: dict[int, Person] = {}
 
@@ -29,7 +35,7 @@ def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[flo
 
 	traverse( person, current_ahnentafel=1, current_gen=0)
 	
-	ancestor_list = [ (_position(ahnentafel), ahnentafel, person) for ahnentafel, person in ancestors.items() ]
+	ancestor_list = [ (_position(ahnentafel), ahnentafel, current_gen, person) for ahnentafel, person in ancestors.items() ]
 	
 	ancestor_list.sort( key=lambda x: x[0], reverse=True)
 	
