@@ -36,24 +36,14 @@ def get_ancestors( person: Person, number_of_generations: int) -> list[tuple[flo
 		# begin traversal with root person, by definition ahnentafel number 1 and generation 0
 
 	traverse( person, current_ahnentafel=1, current_gen=0)
-	
-	ancestor_list = [ (_position(ahnentafel), ahnentafel, _generation(ahnentafel), person) for ahnentafel, person in ancestors.items() ]
+
+	ancestor_list: list[tuple[float, int, int, Person]]	= []
+	for ahnentafel, person in ancestors.items():
+		generation	= ahnentafel.bit_length() - 1
+		first		= 1 << generation
+		position	= 1. - (2 * (ahnentafel - first) + 1) / (2 * first)	
+		ancestor_list.append( (position, ahnentafel, generation, person))
 	
 	ancestor_list.sort( key=lambda x: x[0], reverse=True)
 	
 	return ancestor_list
-	
-def _position( ahnentafel: int) -> float:
-
-	""" Given an ahnentafel number, return its vertical position in a ahnentafel chart	"""
-	""" returns a number scaled to the range 0.0 to 1.0									"""
-	
-	generation	= ahnentafel.bit_length() - 1
-	first		= 1 << generation
-	position	= ahnentafel - first
-
-	return 1. - (2 * position + 1) / (2 * first)
-
-def _generation( ahnentafel: int) -> int:
-	generation	= ahnentafel.bit_length() - 1
-	return generation	

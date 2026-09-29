@@ -122,7 +122,7 @@ def main():
 			print()
 			for (position, ahnentafel_number, generation, ancestor) in ancestor_list:
 				tabs = "\t"*generation
-				print(f"{tabs}{ahnentafel_number} {ancestor.fullname}")
+				print(f"{tabs}{ahnentafel_number} {ancestor.fullname} {generation} {position}")
 		else:
 			print()
 			for person in person_list:
