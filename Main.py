@@ -16,6 +16,8 @@ from GEDCOM.GEDCOM_File			import GEDCOM_File
 
 from People.Population			import Population
 
+from People.Family				import Family, no_family
+
 from CommandLine.CommandLine	import Framework
 
 from Utilities.Utilities		import is_integer
@@ -154,10 +156,20 @@ def main():
 		elif len( person_list) == 1:
 			person = person_list[0]
 			descendants =  get_descendants( person, number_of_generations)
+			actual_generations = 0
+			for (generation, descendant, family) in descendants:
+				if generation > actual_generations: actual_generations = generation
 			print()
-			for (generation, descendant) in descendants:
-				tabs = "\t"*generation
-				print( f"{tabs} {generation} {descendant.fullname}")
+			for (generation, descendant, family) in descendants:
+				if family is no_family:
+					spouse = ""
+				else:
+					if descendant.id == family.husband.id:
+						spouse = " & " + family.wife.fullname
+					else:
+						spouse = " & " + family.husband.fullname
+				tabs = "\t"*(actual_generations - generation)
+				print( f"{tabs} {generation} {descendant.fullname}{spouse}")
 		else:
 			print()
 			for person in person_list:
