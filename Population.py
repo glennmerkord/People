@@ -89,7 +89,7 @@ class Population():
 		# end for
 	
 		for person in candidate_people:
-			for family in person.families_a_spouse_in:
+			for family in person.families:
 				candidate_families.append( family)
 
 		return candidate_families
